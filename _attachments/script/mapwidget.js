@@ -181,11 +181,11 @@ mapwidget.prototype.onZoomEnd = function(e) {
     var zoom = this.map.getZoom();
     var threshold = 16;
     if (zoom>=threshold && !this.layer_antennas_added) {
-//        this.layer_antennas_meta.addLayer( this.layer_antennas );
+        this.layer_antennas_meta.addLayer( this.layer_antennas );
         this.layer_antennas_added = true;
     }
     if (zoom<threshold && this.layer_antennas_added) {
-//        this.layer_antennas_meta.removeLayer( this.layer_antennas );
+        this.layer_antennas_meta.removeLayer( this.layer_antennas );
         this.layer_antennas_added = false;
     }
 }
@@ -271,8 +271,34 @@ mapwidget.prototype.addNeighbor = function(id1, id2) {
     if (node1.neighbor_lines[id2] && node2.neighbor_lines[id1]) {
         return
     }
-
-    var line = L.polyline([node1.data.latlng,node2.data.latlng]/*, {clickable: false}*/).addTo(this.layer_neighborlinks);
+    
+    var quality = 0;
+    
+    for( var n=0; n<node1.data.neighbors.length; n++) {
+        if (node1.data.neighbors[0].id == id2) {
+            quality = node1.data.neighbors[n].quality;
+        }
+    }
+    
+    var color = 'white';
+    if (quality == 1) {
+        color = 'black';
+    } else if (quality == 0) {
+        color: 'gray';
+    } else if (quality >= 0.75) {
+        color = 'green';
+    } else if (quality >= 0.5) {
+        color = 'yellow';	
+    } else if (quality >= 0.25) {
+        color = 'orange';
+    } else /* 0 to 0.25*/ {
+        color = 'red';
+    } 
+    
+    var line = L.polyline([node1.data.latlng, node2.data.latlng], {
+        color: color, 
+        clickable: false 
+    }).addTo(this.layer_neighborlinks);
     line.bringToBack();
     node1.neighbor_lines[id2] = line;
     node2.neighbor_lines[id1] = line;
