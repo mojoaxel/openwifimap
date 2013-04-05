@@ -1,1 +1,6 @@
 *.swp
+/.settings
+/.project
+/.gitignore
+/.couchapprc
+/.gitignore
