@@ -11,7 +11,7 @@ function mapwidget(divId, getPopupHTML, onBBOXChange, onNodeUpdate) {
         attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery &copy; <a href="http://cloudmade.com">CloudMade</a>'
     }).addTo(this.map);
     // https://raw.github.com/shramov/leaflet-plugins/master/layer/tile/Bing.js
-    this.tile_bing = new L.BingLayer("ArewtcSllazYp52r7tojb64N94l-OrYWuS1GjUGeTavPmJP_jde3PIdpuYm24VpR");
+    //this.tile_bing = new L.BingLayer("ArewtcSllazYp52r7tojb64N94l-OrYWuS1GjUGeTavPmJP_jde3PIdpuYm24VpR");
 
     this.layer_antennas = L.layerGroup();
     this.layer_antennas_added = false;
@@ -22,8 +22,8 @@ function mapwidget(divId, getPopupHTML, onBBOXChange, onNodeUpdate) {
     this.layer_nodes = L.layerGroup().addTo(this.map);
     L.control.layers(
         {
-            "Cloudmade OSM": this.tile_cloudmade,
-            "Bing satellite": this.tile_bing
+            "Cloudmade OSM": this.tile_cloudmade/*,
+            "Bing satellite": this.tile_bing*/
         },
         {
             "Antennas": this.layer_antennas_meta,
