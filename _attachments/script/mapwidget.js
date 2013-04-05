@@ -267,36 +267,43 @@ mapwidget.prototype.addNodeMarker = function(nodedata) {
 mapwidget.prototype.addNeighbor = function(id1, id2) {
     var node1 = this.nodes[id1]
     var node2 = this.nodes[id2]
-
+    
     if (node1.neighbor_lines[id2] && node2.neighbor_lines[id1]) {
         return
     }
     
+    //get link quality
     var quality = 0;
-    
-    for( var n=0; n<node1.data.neighbors.length; n++) {
+    for ( var n=0; n<node1.data.neighbors.length; n++ ) {
         if (node1.data.neighbors[0].id == id2) {
-            quality = node1.data.neighbors[n].quality;
+            quality = node1.data.neighbors[n].quality || 0;
         }
     }
+    console.log("Quality: " + quality);
     
-    var color = 'white';
+    //change color by connection quality
+    var color = 'gray';
     if (quality == 1) {
         color = 'black';
     } else if (quality == 0) {
         color: 'gray';
     } else if (quality >= 0.75) {
         color = 'green';
-    } else if (quality >= 0.5) {
-        color = 'yellow';	
     } else if (quality >= 0.25) {
         color = 'orange';
-    } else /* 0 to 0.25*/ {
+    } else {
         color = 'red';
-    } 
+    }
+    
+    //set line opacity
+    var opacity = 1;
     
     var line = L.polyline([node1.data.latlng, node2.data.latlng], {
-        color: color, 
+        weight: 3,
+        color: color,
+        fillColor: color,
+        opacity: opacity,
+        fillOpacity: opacity,
         clickable: false 
     }).addTo(this.layer_neighborlinks);
     line.bringToBack();
