@@ -1,1 +1,10 @@
-{}
+{
+  "env" : {
+    "local" : {
+      "db" : "http://localhost:5984/mydb"
+    },
+    "iris" : {
+      "db" : "https://delphiN:treffs@openwifimapfranken.iriscouch.com/openwifimap/"
+    }
+  }
+}
