@@ -18,8 +18,8 @@ function mapwidget(divId, getPopupHTML, onBBOXChange, onNodeUpdate) {
     // layer_antennas will be added to and removed from this meta layer depending on the current zoom level
     this.layer_antennas_meta = L.layerGroup().addTo(this.map); 
     this.layer_neighborlinks = L.layerGroup().addTo(this.map);
-    this.layer_nodes = new L.MarkerClusterGroup().addTo(this.map);
-        //L.layerGroup().addTo(this.map);
+    //this.layer_nodes = new L.MarkerClusterGroup().addTo(this.map);
+    this.layer_nodes = L.layerGroup().addTo(this.map);
     L.control.layers(
         {
             "Cloudmade OSM": this.tile_cloudmade,
@@ -273,17 +273,18 @@ mapwidget.prototype.addNeighbor = function(id1, id2) {
     }
     
     //get link quality
-    var quality = 0;
+    var quality = -1;
     for ( var n=0; n<node1.data.neighbors.length; n++ ) {
-        if (node1.data.neighbors[0].id == id2) {
-            quality = node1.data.neighbors[n].quality || 0;
+        if (node1.data.neighbors[n].id === id2) {
+            quality = node1.data.neighbors[n].quality || -1;
         }
     }
-    console.log("Quality: " + quality);
     
     //change color by connection quality
     var color = 'gray';
-    if (quality == 1) {
+    if (quality == -1) {
+        color = 'white';
+    } else if (quality == 1) {
         color = 'black';
     } else if (quality == 0) {
         color: 'gray';
