@@ -12,21 +12,42 @@ function mapwidget(divId, getPopupHTML, onBBOXChange, onNodeUpdate) {
     }).addTo(this.map);
     // https://raw.github.com/shramov/leaflet-plugins/master/layer/tile/Bing.js
     this.tile_bing = new L.BingLayer("ArewtcSllazYp52r7tojb64N94l-OrYWuS1GjUGeTavPmJP_jde3PIdpuYm24VpR");
-
+    
+    this.layer_heatmap = L.TileLayer.heatMap({
+        radius: { value: 70, absolute: true },
+        opacity: 0.8
+    });
+    
+    this.layer_heatmap_markers = [
+       { lat: 49.47891409401, lon: 10.977642531246, value: 1 },
+       { lat: 49.478875754464, lon: 10.977545971722, value: 1 },
+       { lat: 49.464470742908, lon: 10.87721520382, value: 1 },
+       { lat: 49.467028604377, lon: 11.008402077914 , value: 1 }
+    ];
+    
+    this.layer_heatmap.setData(this.layer_heatmap_markers);
+    this.layer_heatmap.addTo(this.map);
+    this.layer_heatmap_added = true;
+    // layer_heatmap will be added to and removed from this meta layer depending on the current zoom level
+    this.layer_heatmap_meta = L.layerGroup().addTo(this.map); 
+    
     this.layer_antennas = L.layerGroup();
     this.layer_antennas_added = false;
     // layer_antennas will be added to and removed from this meta layer depending on the current zoom level
     this.layer_antennas_meta = L.layerGroup().addTo(this.map); 
+    
     this.layer_neighborlinks = L.layerGroup().addTo(this.map);
+    
     this.layer_nodes = new L.MarkerClusterGroup().addTo(this.map);
-        //L.layerGroup().addTo(this.map);
+    
     L.control.layers(
         {
             "Cloudmade OSM": this.tile_cloudmade,
             "Bing satellite": this.tile_bing
         },
         {
-            "Antennas": this.layer_antennas_meta,
+        	"Heatmap": this.layer_heatmap,
+        	"Antennas": this.layer_antennas_meta,
             "Neighbor links": this.layer_neighborlinks,
             "Nodes": this.layer_nodes
         }
@@ -112,6 +133,9 @@ mapwidget.prototype.onMoveEnd = function(e) {
     if (this.onBBOXChange) {
         this.onBBOXChange(bboxstr);
     }
+    
+    this.layer_heatmap_markers = [];
+    
     $.getJSON('_spatial/nodes_essentials', { "bbox": bboxstr }, (function(data) {
             var missing_neighbors = {};
             var bbox_nodes = [];
@@ -179,14 +203,25 @@ mapwidget.prototype.onMoveEnd = function(e) {
 
 mapwidget.prototype.onZoomEnd = function(e) {
     var zoom = this.map.getZoom();
-    var threshold = 16;
-    if (zoom>=threshold && !this.layer_antennas_added) {
+    
+    var threshold_antennas = 16;
+    if (zoom>=threshold_antennas && !this.layer_antennas_added) {
         this.layer_antennas_meta.addLayer( this.layer_antennas );
         this.layer_antennas_added = true;
     }
-    if (zoom<threshold && this.layer_antennas_added) {
+    if (zoom<threshold_antennas && this.layer_antennas_added) {
         this.layer_antennas_meta.removeLayer( this.layer_antennas );
         this.layer_antennas_added = false;
+    }
+    
+    var threshold_heatmap = 16;
+    if (zoom<threshold_heatmap && !this.layer_heatmap_added) {
+        this.layer_heatmap_meta.addLayer( this.layer_heatmap );
+        this.layer_heatmap_added = true;
+    }
+    if (zoom>=threshold_heatmap && this.layer_heatmap_added) {
+        this.layer_heatmap_meta.removeLayer( this.layer_heatmap );
+        this.layer_heatmap_added = false;
     }
 }
 
@@ -251,6 +286,13 @@ mapwidget.prototype.addAntennaMarkers = function(antennas, latlng) {
         );
     }
     return antenna_markers;
+}
+
+mapwidget.prototype.addHeatmapMarker = function(latlng) {
+    console.log("latlng: ", latlng);
+	this.layer_heatmap_markers.push({ lat: latlng[0], lon: latlng[1], value: 1 });
+    this.layer_heatmap.setData(this.layer_heatmap_markers);
+    return this.layer_heatmap_markers;
 }
 
 mapwidget.prototype.addNodeMarker = function(nodedata) {
@@ -321,6 +363,7 @@ mapwidget.prototype.addNode = function(nodedata) {
         neighbor_lines: {},
         neighbors_handled: false,
         antenna_markers: this.addAntennaMarkers(nodedata.antennas, nodedata.latlng),
+        heatmap_markers: this.addHeatmapMarker(nodedata.latlng),
         node_marker: this.addNodeMarker(nodedata)
     };
 }
