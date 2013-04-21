@@ -32,7 +32,7 @@ function queryStringToObject( qstr )
 //////////////////////////////////////////////////////////
 // general functions
 function getPopupHTML(nodedata) {
-    return ich.mappopupmust(nodedata, true);
+    //FIXME: return ich.mappopupmust(nodedata, true);
 }
 
 // obj may be an object or a list
@@ -41,7 +41,7 @@ function scanListsObj(obj) {
         for (var i=0; i<obj.length; i++) {
             scanListsObj(obj[i]);
         }
-        return obj.length>0
+        return obj.length>0;
     }
     if (obj instanceof Object) {
         for (var key in obj) {
