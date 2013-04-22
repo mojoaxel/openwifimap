@@ -15,7 +15,7 @@ function mapwidget(divId, getPopupHTML, onBBOXChange, onNodeUpdate) {
     this.tile_bing = new L.BingLayer("ArewtcSllazYp52r7tojb64N94l-OrYWuS1GjUGeTavPmJP_jde3PIdpuYm24VpR");
     
     this.layer_heatmap = L.TileLayer.heatMap({
-        radius: { value: 20, absolute: true },
+        radius: { value: 30, absolute: true },
         opacity: 0.95,
         debug: false,
         gradient: {
