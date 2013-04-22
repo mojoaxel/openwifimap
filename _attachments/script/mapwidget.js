@@ -14,22 +14,23 @@ function mapwidget(divId, getPopupHTML, onBBOXChange, onNodeUpdate) {
     this.tile_bing = new L.BingLayer("ArewtcSllazYp52r7tojb64N94l-OrYWuS1GjUGeTavPmJP_jde3PIdpuYm24VpR");
     
     this.layer_heatmap = L.TileLayer.heatMap({
-        radius: { value: 70, absolute: true },
-        opacity: 0.8
+        radius: { value: 20, absolute: true },
+        opacity: 0.95,
+        debug: false,
+        gradient: {
+            '0.4': "rgb(0,0,255)", //blue
+            '0.6': "rgb(255,0,144)" //magenta
+        }
     });
     
-    this.layer_heatmap_markers = [
-       { lat: 49.47891409401, lon: 10.977642531246, value: 1 },
-       { lat: 49.478875754464, lon: 10.977545971722, value: 1 },
-       { lat: 49.464470742908, lon: 10.87721520382, value: 1 },
-       { lat: 49.467028604377, lon: 11.008402077914 , value: 1 }
-    ];
-    
-    this.layer_heatmap.setData(this.layer_heatmap_markers);
-    this.layer_heatmap.addTo(this.map);
+    this.layer_heatmap_markers = [];
+    //Adds an (hopefully) invisible marker to the heatmap to set the max value. 
+    //This is necessary because there is no setMaxValue function or similar in the leaflet (heatmap-leaflet.js:99) implementation.
+    this.layer_heatmap_markers.push({ lat: 0, lon: 0, value: 2 });
+    //this.layer_heatmap.addTo(this.map);
     this.layer_heatmap_added = true;
     // layer_heatmap will be added to and removed from this meta layer depending on the current zoom level
-    this.layer_heatmap_meta = L.layerGroup().addTo(this.map); 
+    this.layer_heatmap_meta = L.layerGroup();//.addTo(this.map); 
     
     this.layer_antennas = L.layerGroup();
     this.layer_antennas_added = false;
@@ -46,8 +47,8 @@ function mapwidget(divId, getPopupHTML, onBBOXChange, onNodeUpdate) {
             "Bing satellite": this.tile_bing
         },
         {
-        	"Heatmap": this.layer_heatmap,
-        	"Antennas": this.layer_antennas_meta,
+            "Heatmap": this.layer_heatmap,
+            "Antennas": this.layer_antennas_meta,
             "Neighbor links": this.layer_neighborlinks,
             "Nodes": this.layer_nodes
         }
@@ -122,11 +123,11 @@ function mapwidget(divId, getPopupHTML, onBBOXChange, onNodeUpdate) {
 mapwidget.prototype.onLocationFound = function(e) {
     var radius = e.accuracy / 2;
     L.circle(e.latlng, radius).addTo(this.map).bindPopup("You seem to be within " + radius + " meters from this point").openPopup();
-}
+};
 
 mapwidget.prototype.onLocationError = function(e) {
     console.log(e.message);
-}
+};
 
 mapwidget.prototype.onMoveEnd = function(e) {
     var bboxstr = this.map.getBounds().toBBoxString();
@@ -134,7 +135,7 @@ mapwidget.prototype.onMoveEnd = function(e) {
         this.onBBOXChange(bboxstr);
     }
     
-    this.layer_heatmap_markers = [];
+    //this.layer_heatmap_markers = [];
     
     $.getJSON('_spatial/nodes_essentials', { "bbox": bboxstr }, (function(data) {
             var missing_neighbors = {};
@@ -150,7 +151,7 @@ mapwidget.prototype.onMoveEnd = function(e) {
                         if (this.nodes[neigh.id]) {
                             this.addNeighbor(nodedata.id, neigh.id);
                             if (missing_neighbors[nodedata.id]) {
-                                delete missing_neighbors[nodedata.id]
+                                delete missing_neighbors[nodedata.id];
                             }
                         } else {
                             missing_neighbors[neigh.id] = true;
@@ -199,7 +200,7 @@ mapwidget.prototype.onMoveEnd = function(e) {
 
             }
         }).bind(this));
-}
+};
 
 mapwidget.prototype.onZoomEnd = function(e) {
     var zoom = this.map.getZoom();
@@ -214,7 +215,7 @@ mapwidget.prototype.onZoomEnd = function(e) {
         this.layer_antennas_added = false;
     }
     
-    var threshold_heatmap = 16;
+    var threshold_heatmap = 20;
     if (zoom<threshold_heatmap && !this.layer_heatmap_added) {
         this.layer_heatmap_meta.addLayer( this.layer_heatmap );
         this.layer_heatmap_added = true;
@@ -223,7 +224,7 @@ mapwidget.prototype.onZoomEnd = function(e) {
         this.layer_heatmap_meta.removeLayer( this.layer_heatmap );
         this.layer_heatmap_added = false;
     }
-}
+};
 
 function getAntennaIconSVG(h, w, antenna) {
     var data = {
@@ -253,18 +254,18 @@ function getAntennaIconSVG(h, w, antenna) {
                 :
                 function () {
                     var ant = this.antenna,
-        cx = this.hw,
-        cy = this.hh,
-        r = this.r,
-        ret = '';
+                    cx = this.hw,
+                    cy = this.hh,
+                    r = this.r,
+                    ret = '';
                     ret += '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="url(#gradfill)" />';
                     ret += '<circle cx="'+cx+'" cy="'+cy+'" r="'+0.1*r+'" />';
                     return ret;
                 })
-    }
+    };
     svg = ich.nodemarker(data, true);
     return svg;
-}
+};
 
 mapwidget.prototype.addAntennaMarkers = function(antennas, latlng) {
     var antenna_markers = [];
@@ -286,14 +287,13 @@ mapwidget.prototype.addAntennaMarkers = function(antennas, latlng) {
         );
     }
     return antenna_markers;
-}
+};
 
 mapwidget.prototype.addHeatmapMarker = function(latlng) {
-    console.log("latlng: ", latlng);
 	this.layer_heatmap_markers.push({ lat: latlng[0], lon: latlng[1], value: 1 });
     this.layer_heatmap.setData(this.layer_heatmap_markers);
     return this.layer_heatmap_markers;
-}
+};
 
 mapwidget.prototype.addNodeMarker = function(nodedata) {
     var circle = new L.Marker( nodedata.latlng, 
@@ -304,11 +304,11 @@ mapwidget.prototype.addNodeMarker = function(nodedata) {
     circle.bindPopup(this.getPopupHTML(nodedata));
     circle.addTo(this.layer_nodes);
     return circle;
-}
+};
 
 mapwidget.prototype.addNeighbor = function(id1, id2) {
-    var node1 = this.nodes[id1]
-    var node2 = this.nodes[id2]
+    var node1 = this.nodes[id1];
+    var node2 = this.nodes[id2];
     
     if (node1.neighbor_lines[id2] && node2.neighbor_lines[id1]) {
         return
@@ -321,7 +321,6 @@ mapwidget.prototype.addNeighbor = function(id1, id2) {
             quality = node1.data.neighbors[n].quality || 0;
         }
     }
-    console.log("Quality: " + quality);
     
     //change color by connection quality
     var color = 'gray';
@@ -352,7 +351,7 @@ mapwidget.prototype.addNeighbor = function(id1, id2) {
     node1.neighbor_lines[id2] = line;
     node2.neighbor_lines[id1] = line;
     return line;
-}
+};
 
 mapwidget.prototype.addNode = function(nodedata) {
     if (this.nodes[nodedata.id]) {
@@ -366,5 +365,4 @@ mapwidget.prototype.addNode = function(nodedata) {
         heatmap_markers: this.addHeatmapMarker(nodedata.latlng),
         node_marker: this.addNodeMarker(nodedata)
     };
-}
-
+};
