@@ -11,7 +11,7 @@ function mapwidget(divId, getPopupHTML, onBBOXChange, onNodeUpdate) {
         attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery &copy; <a href="http://cloudmade.com">CloudMade</a>'
     }).addTo(this.map);
     // https://raw.github.com/shramov/leaflet-plugins/master/layer/tile/Bing.js
-
+    
     this.tile_bing = new L.BingLayer("ArewtcSllazYp52r7tojb64N94l-OrYWuS1GjUGeTavPmJP_jde3PIdpuYm24VpR");
     
     this.layer_heatmap = L.TileLayer.heatMap({
@@ -37,7 +37,7 @@ function mapwidget(divId, getPopupHTML, onBBOXChange, onNodeUpdate) {
     this.layer_antennas_added = false;
     // layer_antennas will be added to and removed from this meta layer depending on the current zoom level
 
-    this.layer_antennas_meta = L.layerGroup().addTo(this.map); 
+    this.layer_antennas_meta = L.layerGroup();//.addTo(this.map); 
 
     this.layer_neighborlinks = L.layerGroup().addTo(this.map);
     //this.layer_nodes = new L.MarkerClusterGroup().addTo(this.map);
